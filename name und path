@@ -173,7 +173,7 @@ void do_entry(const char * entry_name, char ** parms){
     int i=0;
     int ls_mode=0;
 	int default_print = 1;
-	int print_this=0;
+	int print_this=1;
     
     char buffer[MAXLEN];
     const char possible_entry[10][MAXLEN] = {"-nogroup","-group", "-nouser", "-user", "-name", "-type", "-path", "-print", "-ls"};
