@@ -43,15 +43,21 @@ static void no_argv(int argc, char ** parms);
 
 static void do_entry(const char * entry_name, char ** parms);
 static void do_dir(const char * dir_name, char ** parms,int ls_mode);
-static void do_nogroup(char *parms);
-static void do_group(char *parms);
-static void do_nouser(char *parms);
-static void do_user(char *parms);
 static int do_name(const char * entry_name, char *parms);
 static int do_type(const char *parms, const struct stat *entry_data);
 static int do_path(const char * entry_name, char *parms);
 static void do_print(const char *file_name,const int print_that);
 static void do_ls(const char *path,struct stat *buf,const int print_that);
+
+int do_user(struct stat entry_data, const char * parms);
+int do_username(struct stat entry_data, const char * parms);
+int do_userid(struct stat entry_data, const char * parms);
+int do_nouser(struct stat entry_data);
+int do_group(struct stat entry_data, const char * parms);
+int do_groupname(struct stat entry_data, const char * parms);
+int do_groupid(struct stat entry_data, const char * parms);
+int do_nogroup(struct stat entry_data);
+
 
 int main (int argc, char* argv[])
 {
@@ -191,16 +197,16 @@ void do_entry(const char * entry_name, char ** parms){
                     switch (j)
                 {
                 case 0:
-                    do_nogroup(parms[i+1]);
+                  print_this=do_nogroup(entry_data);
                     break;
                 case 1:
-                    do_group(parms[i+1]);
+                   print_this=do_group(entry_data,parms[i+1]);
                     break;
                 case 2:
-                    do_nouser(parms[i+1]);
+                   print_this=do_nouser(entry_data);
                     break;
                 case 3:
-                    do_user(parms[i+1]);
+                    print_this=do_user(entry_data,parms[i+1]);
                     break;
                 case 4:
                     print_this=do_name(entry_name,parms[i + 1]);
@@ -454,3 +460,162 @@ static void do_ls(const char *path, struct stat *buf,const int print_that) {
 		printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
 
 	}
+
+int do_user(struct stat data_entry, const char * parms)
+{
+    int match;
+    if(do_username(data_entry, parms) || do_userid(data_entry, parms) == 1){
+
+        match = 1;
+    } else {
+
+        match = 0;
+    }
+    return match;
+}
+
+
+
+
+int do_username(struct stat entry_data, const char * parms)
+{
+    int match;
+    struct passwd *pwd_entry;
+    errno = 0;
+    pwd_entry = getpwnam(parms);
+    if (pwd_entry != NULL)
+    {
+        if((entry_data.st_uid == pwd_entry->pw_uid)==1){
+
+            match = 1;
+        }else{
+
+            match = 0;
+        }
+    }
+    else
+    {
+        match = 0;
+        if (errno != 0)
+            error(0, errno, "\nError - user\n");
+    }
+    return match;
+}
+
+
+
+
+int do_userid(struct stat entry_data, const char * parms)
+{
+    int match;
+    uid_t uid;
+
+    uid = (uid_t)strtol(parms,NULL,0);
+
+    if((entry_data.st_uid == uid)== 1 ){
+
+        match = 1;
+    }else{
+
+        match = 0;
+    }
+
+    return match;
+}
+
+
+
+
+int do_nouser(struct stat entry_data)
+{
+    int result;
+    struct passwd *pwd_entry;
+    errno = 0;
+    pwd_entry = getpwuid(entry_data.st_uid);
+    result = (pwd_entry == NULL);
+    if (errno !=0) {
+        error(0, errno, "\nError - nouser\n");
+    }
+    return result;
+}
+
+
+
+
+int do_group(struct stat entry_data, const char * parms)
+{
+    int result;
+   if(do_groupname(entry_data, parms) || do_groupid(entry_data, parms)== 1 ){
+
+       result = 1;
+
+   } else {
+
+       result = 0;
+   }
+    return result;
+}
+
+
+
+
+int do_groupname(struct stat entry_data, const char * parms)
+{
+    int match;
+    struct group *gr_entry;
+    errno = 0;
+    gr_entry = getgrnam(parms);
+    if (gr_entry != NULL)
+    {
+        match = (entry_data.st_gid == gr_entry->gr_gid);
+    }
+    else
+    {
+        match = 0;
+        if (errno != 0) {
+            error(0, errno, "\nError - group\n");
+        }
+    }
+    return match;
+}
+
+
+
+int do_groupid(struct stat entry_data, const char * parms)
+{
+    int match;
+
+    gid_t gid;
+
+    gid = (gid_t)strtol(parms,NULL,0);
+
+    if((entry_data.st_gid == gid)==1){
+
+        match = 1;
+    }else {
+
+        match = 0;
+    }
+    return match;
+}
+
+
+int do_nogroup(struct stat entry_data){
+    {
+        int match;
+        errno = 0;
+
+        struct group *gr_entry;
+
+       gr_entry = getgrgid(entry_data.st_gid);
+
+        match = (gr_entry == NULL);
+
+        if (errno != 0){
+            error(0, errno, "\nError - nogroup\n");
+        }
+
+        return match;
+    }
+
+}
