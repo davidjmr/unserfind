@@ -277,18 +277,6 @@ void do_entry(const char * entry_name, char ** parms){
     }
 }
 
-    static void do_group(char *parms){
-        printf("Group: Gesucht wird nach: %s", parms);
-    }
-    static void do_nogroup(char *parms) {
-        printf("NoGroup:Gesucht wird nach: %s", parms);
-    }
-    static void do_nouser(char *parms) {
-        printf("do_nouser Gesucht wird nach: %s", parms);
-    }
-    static void do_user(char *parms) {
-        printf(" do_user Gesucht wird nach: %s", parms);
-    }
    
 static int do_name(const char *entry_name, char *parms) {
 const char *buff = NULL;
