@@ -206,10 +206,7 @@ void do_entry(const char * entry_name, char ** parms){
                     print_this=do_name(entry_name,parms[i + 1]);
                     break;
                 case 5:
-                	
-                	
-                	do_type(parms[i+1],&entry_data);
-
+                	print_this=do_type(parms[i+1],&entry_data);
                 	break;
                 case 6:
                     print_this=do_path(entry_name,parms[i + 1]);
